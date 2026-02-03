@@ -98,14 +98,37 @@
         }).join('');
     }
 
-    function toggleAdmin() {
-        const pass = prompt("Введіть пароль:");
-        if (pass === "1234") { // МОЖЕТЕ ЗМІНИТИ ЦЕЙ ПАРОЛЬ ТУТ
+// Функція для входу (викликається при натисканні на іконку щита/користувача)
+async function toggleAdmin() {
+    if (!isAdminMode) {
+        const email = prompt("Введіть ваш Email:");
+        const password = prompt("Введіть ваш пароль:");
+
+        if (!email || !password) return;
+
+        // Спроба входу через Supabase Auth
+        const { data, error } = await client.auth.signInWithPassword({
+            email: email,
+            password: password,
+        });
+
+        if (error) {
+            alert("Помилка авторизації: " + error.message);
+        } else {
             isAdminMode = true;
-            document.getElementById('adminPanel').classList.toggle('hidden');
-            loadData();
+            document.getElementById('adminPanel').classList.remove('hidden');
+            loadData(); // Перевантажуємо дані, щоб з'явилися кнопки видалення
+            alert("Ви успішно увійшли як адмін!");
         }
+    } else {
+        // Якщо вже увійшли — виходимо
+        await client.auth.signOut();
+        isAdminMode = false;
+        document.getElementById('adminPanel').classList.add('hidden');
+        loadData();
+        alert("Ви вийшли з режиму адміністратора");
     }
+}
 
     async function addItem() {
         const name = document.getElementById('iName').value;
