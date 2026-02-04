@@ -88,17 +88,19 @@
                 const card = document.createElement('div');
                 card.className = 'product-card bg-white rounded-[2.5rem] overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 relative group border border-slate-100';
                 card.innerHTML = `
-                    <div class="aspect-square overflow-hidden bg-slate-100">
-                        <img src="${p.image}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
-                    </div>
-                    <div class="p-7">
-                        <h3 class="text-lg font-bold text-slate-800 mb-2 truncate">${p.name}</h3>
-                        <div class="flex justify-between items-center">
-                            <span class="text-2xl font-black text-slate-900">${p.price} <small class="text-[10px] font-bold text-slate-400">UAH</small></span>
-                            <a href="https://t.me/VikusyaGuzeeva" target="_blank" class="bg-slate-900 text-white px-6 py-2 rounded-full font-black text-[10px] uppercase tracking-widest hover:bg-emerald-600 transition-colors shadow-lg">Замовити</a>
-                        </div>
-                    </div>
-                `;
+    <div class="aspect-square overflow-hidden bg-slate-50">
+        <img src="${p.image}" class="w-full h-full object-cover">
+    </div>
+    <div class="p-6">
+        <div class="font-bold text-slate-800 mb-2 min-h-[3rem]">
+            ${p.name} 
+        </div>
+        <div class="flex justify-between items-center">
+            <span class="text-2xl font-black text-slate-900">${p.price} грн</span>
+            <a href="https://t.me/VikusyaGuzeeva" class="...">Замовити</a>
+        </div>
+    </div>
+`;
 
                 if (isAdminMode) {
                     const controls = document.createElement('div');
