@@ -3,144 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gmed Admin & PDF</title>
+    <title>Gmed Admin Panel</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        .editor-btn { @apply p-2 bg-slate-100 rounded hover:bg-emerald-100 transition-colors text-xs font-bold; }
-        #editor { min-height: 80px; border: 1px solid #e2e8f0; border-radius: 1rem; padding: 12px; background: #f8fafc; outline: none; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .editor-btn { @apply p-2 bg-white border rounded hover:bg-emerald-50 transition-colors text-xs font-bold; }
+        #editor { min-height: 100px; border: 1px solid #e2e8f0; border-radius: 1rem; padding: 15px; background: white; outline: none; }
         #editor:focus { border-color: #10b981; }
-        /* Приховуємо службовий блок для PDF */
-        #pdf-template { display: none; }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen">
+<body class="bg-slate-50 min-h-screen text-slate-900">
 
 <header class="bg-white/80 backdrop-blur-md border-b sticky top-0 z-50 px-4 py-2">
     <div class="container mx-auto flex justify-between items-center">
-        <div class="flex items-center">
-            <img src="https://res.cloudinary.com/dtmvidhde/image/upload/v1770034516/Gmed_cosmetics_z7hp7a.jpg" 
-                 alt="Gmed Cosmetics" 
-                 class="h-14 w-auto object-contain rounded-lg">
-        </div>
+        <img src="https://res.cloudinary.com/dtmvidhde/image/upload/v1770034516/Gmed_cosmetics_z7hp7a.jpg" alt="Gmed" class="h-12 w-auto object-contain">
         
-        <div class="flex items-center gap-2">
-            <button onclick="exportToCSV()" class="bg-slate-100 text-slate-600 px-3 py-2 rounded-xl text-[10px] font-black hover:bg-slate-200 transition-all flex items-center gap-2">
-                <i class="fas fa-file-export"></i> 
-                <span class="hidden sm:inline uppercase">Прайс</span>
-            </button>
-            
-            <button onclick="toggleAdmin()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-100 text-slate-400 hover:text-emerald-600 transition-all">
-                <i class="fas fa-user-shield"></i>
-            </button>
+        <div class="flex items-center gap-3">
+            <div id="rateControl" class="hidden flex items-center gap-2 bg-emerald-50 border border-emerald-100 p-1.5 rounded-xl">
+                <span class="text-[10px] font-black text-emerald-700 ml-1">КУРС €:</span>
+                <input type="number" id="eurRate" step="0.1" class="w-14 bg-white border-0 rounded-lg px-2 py-1 text-xs font-black focus:ring-0">
+                <button onclick="updateGlobalRate()" class="text-emerald-600 p-1 hover:scale-110 transition-transform"><i class="fas fa-check-circle"></i></button>
+            </div>
+
+            <button onclick="exportToCSV()" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all">Прайс</button>
+            <button onclick="toggleAdmin()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-400 hover:text-emerald-600 transition-all"><i class="fas fa-user-shield"></i></button>
         </div>
     </div>
 </header>
-<main class="container mx-auto p-4">
-    <div id="adminPanel" class="hidden bg-white p-6 rounded-3xl shadow-xl border-2 border-emerald-500/10 mb-8">
-        <h2 id="formTitle" class="text-xs font-black uppercase text-emerald-600 mb-4 tracking-widest">Керування товаром</h2>
-        <div class="grid grid-cols-1 gap-4">
-            <div class="space-y-2">
-                <div class="flex gap-1 mb-1">
-                    <button type="button" class="editor-btn" onclick="execCmd('bold')">B</button>
-                    <button type="button" class="editor-btn" onclick="execCmd('foreColor', prompt('Колір (red, #000...):'))"><i class="fas fa-palette"></i></button>
-                    <button type="button" class="editor-btn" onclick="execCmd('fontSize', prompt('Розмір (1-7):'))"><i class="fas fa-text-height"></i></button>
-                </div>
-                <div id="editor" contenteditable="true" placeholder="Назва товару (можна з оформленням)"></div>
+
+<main class="container mx-auto p-4 max-w-7xl">
+    <div id="adminPanel" class="hidden bg-white p-6 rounded-[2.5rem] shadow-2xl border-2 border-emerald-500/10 mb-10 space-y-4">
+        <div class="flex justify-between items-center">
+            <h2 class="text-xs font-black uppercase text-emerald-600 tracking-widest">Редагування товару</h2>
+            <button onclick="resetForm()" id="cancelBtn" class="hidden text-slate-400 hover:text-red-500"><i class="fas fa-times-circle"></i></button>
+        </div>
+        
+        <div class="flex gap-1 mb-2">
+            <button type="button" class="editor-btn" onclick="execCmd('bold')">B</button>
+            <button type="button" class="editor-btn" onclick="execCmd('foreColor', prompt('Колір (напр. red, #000):'))"><i class="fas fa-palette"></i></button>
+            <button type="button" class="editor-btn" onclick="execCmd('removeFormat')"><i class="fas fa-eraser"></i></button>
+        </div>
+        <div id="editor" contenteditable="true" placeholder="Введіть назву та опис..."></div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="space-y-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Ціна (число)</label>
+                <input type="number" id="price" class="w-full p-3 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500">
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <input type="number" id="price" placeholder="Ціна (грн)" class="p-3 bg-slate-50 border rounded-2xl outline-none">
-                <input type="text" id="image" placeholder="URL фото" class="p-3 bg-slate-50 border rounded-2xl outline-none">
-                <div class="flex gap-2">
-                    <button onclick="saveProduct()" id="saveBtn" class="flex-1 bg-emerald-600 text-white font-black rounded-2xl uppercase text-xs tracking-widest">Зберегти</button>
-                    <button onclick="resetForm()" id="cancelBtn" class="hidden px-4 bg-slate-100 text-slate-500 rounded-2xl">X</button>
-                </div>
+            <div class="space-y-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Тип ціни</label>
+                <select id="price_type" class="w-full p-3 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500 font-bold">
+                    <option value="uah">Гривня (₴)</option>
+                    <option value="eur_to_uah">€ -> ГРН (по курсу)</option>
+                    <option value="eur_fixed">Євро (€ фікс)</option>
+                </select>
+            </div>
+            <div class="space-y-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Знижки / Акції</label>
+                <input type="text" id="discount_info" placeholder="напр: від 2 шт по 400" class="w-full p-3 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500">
+            </div>
+            <div class="space-y-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">URL Фото</label>
+                <input type="text" id="image" class="w-full p-3 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500">
             </div>
         </div>
+
+        <button onclick="saveProduct()" id="saveBtn" class="w-full bg-emerald-600 text-white p-4 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-700 shadow-lg shadow-emerald-200 transition-all">Зберегти товар</button>
         <input type="hidden" id="editId">
     </div>
 
     <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
 </main>
 
-<div id="pdf-content" style="padding: 40px; font-family: Arial, sans-serif; color: #333;">
-    <div style="display: flex; justify-between; align-items: center; border-bottom: 2px solid #10b981; padding-bottom: 20px; margin-bottom: 30px;">
-        <div>
-            <h1 style="font-size: 28px; font-weight: bold; margin: 0; color: #1e293b;">GMED <span style="color: #10b981;">COSMETICS</span></h1>
-            <p style="font-size: 12px; color: #64748b; margin: 5px 0 0 0;">Прайс-лист актуальний на: <span id="pdf-date"></span></p>
-        </div>
-    </div>
-    <table style="width: 100%; border-collapse: collapse;">
-        <thead>
-            <tr style="background: #f8fafc; text-align: left;">
-                <th style="padding: 12px; border-bottom: 1px solid #e2e8f0; width: 80px;">Фото</th>
-                <th style="padding: 12px; border-bottom: 1px solid #e2e8f0;">Найменування</th>
-                <th style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: right; width: 100px;">Ціна</th>
-            </tr>
-        </thead>
-        <tbody id="pdf-table-body">
-            </tbody>
-    </table>
-    <div style="margin-top: 40px; text-align: center; font-size: 10px; color: #94a3b8; border-top: 1px dashed #e2e8f0; padding-top: 20px;">
-        Для замовлення звертайтесь: @VikusyaGuzeeva
-    </div>
-</div>
-
 <script>
     const SUPABASE_URL = 'https://djrrojucwvafgvetdrnf.supabase.co'.trim();
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqcnJvanVjd3ZhZmd2ZXRkcm5mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2OTgwNjcsImV4cCI6MjA4NTI3NDA2N30.QLq_rJF6XwskKbOO3zjhSrF8DK3YnRscIIjJl0Kr2e4'.trim();
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    
     let isAdminMode = false;
+    let globalEurRate = 45.0;
 
-    function execCmd(cmd, value = null) { document.execCommand(cmd, false, value); }
+    function execCmd(cmd, val = null) { document.execCommand(cmd, false, val); }
 
-    // ФУНКЦІЯ ЕКСПОРТУ В PDF
-    async function exportToPDF() {
-        const { data, error } = await client.from('products').select('*').order('name');
-        if (error) return alert("Помилка завантаження даних");
-
-        const tableBody = document.getElementById('pdf-table-body');
-        document.getElementById('pdf-date').innerText = new Date().toLocaleDateString('uk-UA');
-        tableBody.innerHTML = '';
-
-        data.forEach(p => {
-            tableBody.innerHTML += `
-                <tr>
-                    <td style="padding: 10px; border-bottom: 1px solid #f1f5f9;">
-                        <img src="${p.image}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
-                    </td>
-                    <td style="padding: 10px; border-bottom: 1px solid #f1f5f9; font-size: 14px;">
-                        ${p.name}
-                    </td>
-                    <td style="padding: 10px; border-bottom: 1px solid #f1f5f9; font-size: 16px; font-weight: bold; text-align: right; color: #111;">
-                        ${p.price} <small style="font-size: 10px; font-weight: normal;">грн</small>
-                    </td>
-                </tr>
-            `;
-        });
-
-        const element = document.getElementById('pdf-content');
-        const opt = {
-            margin:       [10, 10],
-            filename:     `Gmed_Price_${new Date().toLocaleDateString()}.pdf`,
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-
-        // Тимчасово показуємо, генеруємо і приховуємо
-        element.style.display = 'block';
-        html2pdf().set(opt).from(element).save().then(() => {
-            element.style.display = 'none';
-        });
+    async function init() {
+        await loadSettings();
+        checkUser();
     }
 
-    // Решта функцій (loadData, saveProduct тощо) залишаються без змін
+    async function loadSettings() {
+        const { data } = await client.from('settings').select('*').eq('key', 'eur_rate').single();
+        if (data) {
+            globalEurRate = data.value;
+            document.getElementById('eurRate').value = globalEurRate;
+        }
+    }
+
+    async function updateGlobalRate() {
+        const newRate = document.getElementById('eurRate').value;
+        const { error } = await client.from('settings').upsert({ key: 'eur_rate', value: newRate });
+        if (!error) { alert("Курс оновлено!"); location.reload(); }
+    }
+
     async function checkUser() {
         const { data: { user } } = await client.auth.getUser();
-        if (user) { isAdminMode = true; document.getElementById('adminPanel').classList.remove('hidden'); }
+        if (user) {
+            isAdminMode = true;
+            document.getElementById('adminPanel').classList.remove('hidden');
+            document.getElementById('rateControl').classList.remove('hidden');
+        }
         loadData();
     }
 
@@ -148,31 +121,44 @@
         const grid = document.getElementById('productsGrid');
         const { data, error } = await client.from('products').select('*').order('created_at', { ascending: false });
         if (error) return;
+        
         grid.innerHTML = '';
         data.forEach(p => {
+            let priceHTML = '';
+            if (p.price_type === 'eur_to_uah') {
+                const uah = (p.price * globalEurRate).toFixed(0);
+                priceHTML = `<div><div class="flex items-baseline gap-1"><span class="text-2xl font-black">${uah}</span><span class="text-xs font-bold text-slate-400">ГРН</span></div><div class="text-[10px] text-slate-400 font-bold">${p.price} € <span class="text-emerald-500 ml-1">курс ${globalEurRate}</span></div></div>`;
+            } else if (p.price_type === 'eur_fixed') {
+                priceHTML = `<div class="flex items-baseline gap-1 text-blue-600"><span class="text-2xl font-black">${p.price}</span><span class="text-xs font-bold uppercase">€</span></div>`;
+            } else {
+                priceHTML = `<div class="flex items-baseline gap-1"><span class="text-2xl font-black">${p.price}</span><span class="text-xs font-bold text-slate-400 uppercase">грн</span></div>`;
+            }
+
             const card = document.createElement('div');
-            card.className = 'bg-white rounded-[2rem] overflow-hidden shadow-sm border border-slate-100 hover:shadow-xl transition-all relative group';
+            card.className = 'bg-white rounded-[2.5rem] overflow-hidden shadow-sm border border-slate-100 hover:shadow-2xl transition-all relative group flex flex-col h-full';
             card.innerHTML = `
-                <div class="aspect-square bg-slate-50"><img src="${p.image}" class="w-full h-full object-cover"></div>
-                <div class="p-6">
-                    <div class="text-slate-800 mb-4 leading-tight">${p.name}</div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-xl font-black">${p.price} грн</span>
-                       <a href="https://t.me/VikusyaGuzeeva" 
-   target="_blank" 
-   rel="noopener noreferrer" 
-   class="text-emerald-600 font-bold text-xs uppercase tracking-widest">
-   Замовити
-</a>
+                <div class="aspect-square bg-slate-50 relative">
+                    <img src="${p.image || 'https://via.placeholder.com/400'}" class="w-full h-full object-cover">
+                    ${p.discount_info ? `<div class="absolute top-4 left-4 bg-emerald-500 text-white text-[9px] font-black px-2 py-1 rounded-lg uppercase tracking-widest shadow-lg shadow-emerald-200">Акція</div>` : ''}
+                </div>
+                <div class="p-6 flex flex-col flex-grow">
+                    <div class="text-slate-800 text-sm mb-4 leading-tight flex-grow">${p.name}</div>
+                    <div class="mt-auto">
+                        <div class="mb-4">
+                            ${priceHTML}
+                            ${p.discount_info ? `<div class="mt-2 text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded-md inline-block">${p.discount_info}</div>` : ''}
+                        </div>
+                        <a href="https://t.me/VikusyaGuzeeva" target="_blank" rel="noopener" class="block w-full text-center bg-slate-900 text-white py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all">Замовити</a>
                     </div>
                 </div>
             `;
+            
             if (isAdminMode) {
                 const tools = document.createElement('div');
                 tools.className = 'absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity';
                 tools.innerHTML = `
-                    <button onclick="prepareEdit('${p.id}', \`${p.name}\`, ${p.price}, '${p.image}')" class="w-8 h-8 bg-white rounded-full text-blue-600 shadow-md flex items-center justify-center"><i class="fas fa-pen text-[10px]"></i></button>
-                    <button onclick="deleteProduct('${p.id}')" class="w-8 h-8 bg-white rounded-full text-red-500 shadow-md flex items-center justify-center"><i class="fas fa-trash text-[10px]"></i></button>
+                    <button onclick="prepareEdit('${p.id}', \`${p.name}\`, ${p.price}, '${p.image}', '${p.price_type}', '${p.discount_info || ''}')" class="w-8 h-8 bg-white rounded-full text-blue-600 shadow-lg flex items-center justify-center"><i class="fas fa-pen text-[10px]"></i></button>
+                    <button onclick="deleteProduct('${p.id}')" class="w-8 h-8 bg-white rounded-full text-red-500 shadow-lg flex items-center justify-center"><i class="fas fa-trash text-[10px]"></i></button>
                 `;
                 card.appendChild(tools);
             }
@@ -180,13 +166,31 @@
         });
     }
 
-    function prepareEdit(id, name, price, image) {
+    async function saveProduct() {
+        const id = document.getElementById('editId').value;
+        const name = document.getElementById('editor').innerHTML;
+        const price = document.getElementById('price').value;
+        const image = document.getElementById('image').value;
+        const price_type = document.getElementById('price_type').value;
+        const discount_info = document.getElementById('discount_info').value;
+
+        if (!name || !price) return alert("Назва та ціна обов'язкові!");
+
+        const payload = { name, price: Number(price), image, price_type, discount_info, created_at: new Date() };
+        const { error } = id ? await client.from('products').update(payload).eq('id', id) : await client.from('products').insert([payload]);
+
+        if (error) alert(error.message); else { resetForm(); loadData(); }
+    }
+
+    function prepareEdit(id, name, price, image, type, discount) {
         document.getElementById('editId').value = id;
         document.getElementById('editor').innerHTML = name;
         document.getElementById('price').value = price;
         document.getElementById('image').value = image;
+        document.getElementById('price_type').value = type;
+        document.getElementById('discount_info').value = discount;
+        document.getElementById('saveBtn').innerText = "Оновити товар";
         document.getElementById('cancelBtn').classList.remove('hidden');
-        document.getElementById('saveBtn').innerText = "Оновити";
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -195,33 +199,30 @@
         document.getElementById('editor').innerHTML = "";
         document.getElementById('price').value = "";
         document.getElementById('image').value = "";
-        document.getElementById('saveBtn').innerText = "Зберегти";
+        document.getElementById('discount_info').value = "";
+        document.getElementById('saveBtn').innerText = "Зберегти товар";
         document.getElementById('cancelBtn').classList.add('hidden');
     }
 
-    async function saveProduct() {
-        const id = document.getElementById('editId').value;
-        const name = document.getElementById('editor').innerHTML;
-        const price = document.getElementById('price').value;
-        const image = document.getElementById('image').value;
-        if (!name || !price) return alert("Заповніть назву та ціну!");
-        const payload = { name, price: Number(price), image };
-        const { error } = id ? await client.from('products').update(payload).eq('id', id) : await client.from('products').insert([payload]);
-        if (error) alert(error.message); else { resetForm(); loadData(); }
-    }
-
-    async function deleteProduct(id) {
-        if (confirm("Видалити?")) { await client.from('products').delete().eq('id', id); loadData(); }
-    }
+    async function deleteProduct(id) { if(confirm("Видалити?")) { await client.from('products').delete().eq('id', id); loadData(); } }
 
     async function toggleAdmin() {
         if (isAdminMode) { await client.auth.signOut(); location.reload(); return; }
-        const email = prompt("Email:"); const pass = prompt("Pass:");
+        const email = prompt("Email:"); const pass = prompt("Password:");
         const { error } = await client.auth.signInWithPassword({ email, password: pass });
         if (error) alert("Помилка"); else location.reload();
     }
 
-    checkUser();
+    async function exportToCSV() {
+        const { data } = await client.from('products').select('name, price, price_type, discount_info');
+        let csv = "Name,Price,Type,Discount\n";
+        data.forEach(r => { csv += `"${r.name.replace(/<[^>]*>/g, '')}",${r.price},${r.price_type},"${r.discount_info || ''}"\n`; });
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'gmed_price.csv'; a.click();
+    }
+
+    init();
 </script>
 </body>
 </html>
