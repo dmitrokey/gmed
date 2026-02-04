@@ -3,16 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GMED | Esthetic Market</title>
+    <title>Gmed Cosmetics | Професійна косметика</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; }
+        .product-card:hover { transform: translateY(-5px); }
     </style>
 </head>
-<body class="bg-[#f8fafc] text-slate-900 min-h-screen">
+<body>
 
 <header class="bg-white/80 backdrop-blur-md border-b sticky top-0 z-50 shadow-sm">
     <div class="container mx-auto px-6 py-4 flex justify-between items-center">
@@ -20,7 +21,6 @@
             <img src="https://res.cloudinary.com/dtmvidhde/image/upload/v1770034516/Gmed_cosmetics_z7hp7a.jpg" 
                  alt="GMED Logo" 
                  class="w-12 h-12 rounded-xl object-cover shadow-sm border border-slate-100">
-            
             <h1 class="text-2xl font-black italic tracking-tighter text-slate-900 uppercase">
                 G<span class="text-emerald-600">med</span>
             </h1>
@@ -32,126 +32,34 @@
     </div>
 </header>
 
-<div id="adminPanel" class="hidden bg-white border-b overflow-hidden transition-all duration-300">
-    <div class="container mx-auto px-6 py-8">
-        <h2 class="text-sm font-bold uppercase tracking-widest text-slate-400 mb-4">Адмін-панель GMED</h2>
+<main class="container mx-auto px-6 py-12">
+    <div id="adminPanel" class="hidden bg-white p-6 rounded-2xl shadow-xl mb-12 border border-emerald-100">
+        <h2 id="adminTitle" class="text-xl font-bold mb-4 text-slate-800">Додати новий товар</h2>
+        <input type="hidden" id="editId" value="">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <input id="iName" type="text" placeholder="Назва" class="bg-slate-50 p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none text-sm">
-            <input id="iCat" type="text" placeholder="Категорія" class="bg-slate-50 p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none text-sm">
-            <input id="iPrice" type="text" placeholder="Ціна" class="bg-slate-50 p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none text-sm">
-            <button onclick="addItem()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl py-3 transition shadow-lg shadow-emerald-100">Додати</button>
+            <input type="text" id="name" placeholder="Назва товару" class="p-3 border rounded-xl outline-none focus:ring-2 focus:ring-emerald-500">
+            <input type="number" id="price" placeholder="Ціна (грн)" class="p-3 border rounded-xl outline-none focus:ring-2 focus:ring-emerald-500">
+            <input type="text" id="image" placeholder="URL фото (Cloudinary)" class="p-3 border rounded-xl outline-none focus:ring-2 focus:ring-emerald-500">
+            <div class="flex gap-2">
+                <button onclick="saveProduct()" id="saveBtn" class="flex-1 bg-emerald-600 text-white p-3 rounded-xl hover:bg-emerald-700 transition-all font-bold shadow-lg shadow-emerald-200">Зберегти</button>
+                <button onclick="cancelEdit()" id="cancelBtn" class="hidden w-12 bg-slate-100 text-slate-400 p-3 rounded-xl hover:bg-slate-200 transition-all">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
         </div>
     </div>
-</div>
 
-<main class="container mx-auto px-6 py-12">
-    <div class="mb-10">
-        <h2 class="text-3xl font-black text-slate-900 mb-2">Актуальний прайс</h2>
-        <p class="text-slate-500 font-medium">Оберіть препарати для вашої практики в GMED</p>
-    </div>
-
-    <div id="grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-        <p class="col-span-full text-center py-20 text-slate-400">Завантаження...</p>
-    </div>
+    <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        </div>
 </main>
 
 <script>
-    const URL_DB = 'https://djrrojucwvafgvetdrnf.supabase.co';
-    const KEY_DB = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqcnJvanVjd3ZhZmd2ZXRkcm5mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2OTgwNjcsImV4cCI6MjA4NTI3NDA2N30.QLq_rJF6XwskKbOO3zjhSrF8DK3YnRscIIjJl0Kr2e4'; 
-    
-    const client = window.supabase.createClient(URL_DB, KEY_DB);
+    // ВСТАВТЕ ВАШІ ДАНІ SUPABASE ТУТ
+    const SUPABASE_URL = 'ВАШ_URL';
+    const SUPABASE_KEY = 'ВАШ_KEY';
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
     let isAdminMode = false;
 
+    // ЗАВАНТАЖЕННЯ ДАНИХ
     async function loadData() {
-        const { data, error } = await client.from('products').select('*').order('category');
-        const grid = document.getElementById('grid');
-        
-        if (error) {
-            grid.innerHTML = `<div class="col-span-full text-red-500 text-center">Помилка: ${error.message}</div>`;
-            return;
-        }
-
-        grid.innerHTML = data.map(p => {
-            // ФОРМУЄМО ПОСИЛАННЯ НА ВАШ ТЕЛЕГРАМ З ТЕКСТОМ
-            const tgMsg = encodeURIComponent(`Вітаю! Хочу замовити: ${p.name}`);
-            const tgLink = `https://t.me/VikusyaGuzeeva?text=${tgMsg}`;
-
-            return `
-            <div class="group bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative">
-                <span class="text-[10px] font-black text-emerald-700 bg-emerald-50 px-3 py-1 rounded-lg uppercase tracking-widest border border-emerald-100 italic">
-                    ${p.category || 'Препарат'}
-                </span>
-                <h3 class="font-bold text-xl mt-4 text-slate-800 leading-tight">${p.name}</h3>
-                <div class="mt-8 flex justify-between items-center">
-                    <div>
-                        <span class="block text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Ціна</span>
-                        <span class="text-2xl font-black text-slate-900">${p.price}</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        ${isAdminMode ? `<button onclick="deleteItem(${p.id})" class="text-red-200 hover:text-red-500 p-2"><i class="fas fa-trash-alt"></i></button>` : ''}
-                        <a href="${tgLink}" target="_blank" class="bg-slate-900 text-white px-5 py-3 rounded-2xl text-sm font-bold hover:bg-emerald-600 transition shadow-lg shadow-slate-200">
-                            Замовити
-                        </a>
-                    </div>
-                </div>
-            </div>`;
-        }).join('');
-    }
-
-// Функція для входу (викликається при натисканні на іконку щита/користувача)
-async function toggleAdmin() {
-    if (!isAdminMode) {
-        const email = prompt("Введіть ваш Email:");
-        const password = prompt("Введіть ваш пароль:");
-
-        if (!email || !password) return;
-
-        // Спроба входу через Supabase Auth
-        const { data, error } = await client.auth.signInWithPassword({
-            email: email,
-            password: password,
-        });
-
-        if (error) {
-            alert("Помилка авторизації: " + error.message);
-        } else {
-            isAdminMode = true;
-            document.getElementById('adminPanel').classList.remove('hidden');
-            loadData(); // Перевантажуємо дані, щоб з'явилися кнопки видалення
-            alert("Ви успішно увійшли як адмін!");
-        }
-    } else {
-        // Якщо вже увійшли — виходимо
-        await client.auth.signOut();
-        isAdminMode = false;
-        document.getElementById('adminPanel').classList.add('hidden');
-        loadData();
-        alert("Ви вийшли з режиму адміністратора");
-    }
-}
-
-    async function addItem() {
-        const name = document.getElementById('iName').value;
-        const category = document.getElementById('iCat').value;
-        const price = document.getElementById('iPrice').value;
-        if(!name || !price) return alert("Заповніть назву та ціну!");
-        const { error } = await client.from('products').insert([{ name, category, price }]);
-        if (error) alert("Помилка: " + error.message);
-        else {
-            document.getElementById('iName').value = '';
-            document.getElementById('iPrice').value = '';
-            loadData();
-        }
-    }
-
-    async function deleteItem(id) {
-        if(confirm('Видалити?')) {
-            await client.from('products').delete().eq('id', id);
-            loadData();
-        }
-    }
-
-    loadData();
-</script>
-</body>
-</html>
