@@ -2,76 +2,105 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <title>Gmed Cosmetics</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gmed Cosmetics Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body class="bg-slate-50">
+<body class="bg-slate-50 min-h-screen">
 
-<header class="bg-white border-b p-4 sticky top-0 z-50">
+<header class="bg-white border-b p-4 sticky top-0 z-50 shadow-sm">
     <div class="container mx-auto flex justify-between items-center">
         <div class="flex items-center gap-2">
-            <img src="https://res.cloudinary.com/dtmvidhde/image/upload/v1770034516/Gmed_cosmetics_z7hp7a.jpg" class="w-10 h-10 rounded">
-            <span class="text-xl font-bold uppercase tracking-tight">G<span class="text-emerald-600">med</span></span>
+            <img src="https://res.cloudinary.com/dtmvidhde/image/upload/v1770034516/Gmed_cosmetics_z7hp7a.jpg" class="w-10 h-10 rounded-lg">
+            <span class="text-xl font-bold text-slate-800 uppercase">G<span class="text-emerald-600">med</span></span>
         </div>
-        <button onclick="toggleAdmin()" class="text-slate-300 hover:text-emerald-600"><i class="fas fa-lock"></i></button>
+        <div id="authStatus" class="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-400 uppercase">Гість</div>
+        <button onclick="toggleAdmin()" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors">
+            <i class="fas fa-user-shield text-slate-400"></i>
+        </button>
     </div>
 </header>
 
-<div id="adminPanel" class="hidden container mx-auto p-6 bg-white m-4 rounded-xl shadow-lg border border-emerald-100">
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
-        <input type="text" id="name" placeholder="Назва" class="p-2 border rounded">
-        <input type="number" id="price" placeholder="Ціна" class="p-2 border rounded">
-        <input type="text" id="image" placeholder="URL фото" class="p-2 border rounded">
-        <button onclick="saveProduct()" class="bg-emerald-600 text-white p-2 rounded font-bold">Додати</button>
+<main class="container mx-auto p-4">
+    <div id="adminPanel" class="hidden bg-white p-6 rounded-2xl shadow-xl border-2 border-emerald-500/20 mb-8 animate-in fade-in slide-in-from-top-2">
+        <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-slate-700">
+            <i class="fas fa-plus-circle text-emerald-500"></i> Новий товар
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="space-y-1">
+                <label class="text-xs font-bold text-slate-400 ml-1">Назва</label>
+                <input type="text" id="name" class="w-full p-3 border rounded-xl bg-slate-50 outline-none focus:ring-2 focus:ring-emerald-500">
+            </div>
+            <div class="space-y-1">
+                <label class="text-xs font-bold text-slate-400 ml-1">Ціна (число)</label>
+                <input type="number" id="price" class="w-full p-3 border rounded-xl bg-slate-50 outline-none focus:ring-2 focus:ring-emerald-500">
+            </div>
+            <div class="space-y-1">
+                <label class="text-xs font-bold text-slate-400 ml-1">Посилання на фото</label>
+                <input type="text" id="image" class="w-full p-3 border rounded-xl bg-slate-50 outline-none focus:ring-2 focus:ring-emerald-500">
+            </div>
+            <div class="flex items-end">
+                <button onclick="saveProduct()" class="w-full bg-emerald-600 text-white p-3 rounded-xl font-black hover:bg-emerald-700 shadow-lg shadow-emerald-200 transition-all">ЗБЕРЕГТИ</button>
+            </div>
+        </div>
     </div>
-</div>
 
-<div id="productsGrid" class="container mx-auto p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-    <div class="col-span-full text-center py-20 text-slate-400">Підключення...</div>
-</div>
+    <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="col-span-full text-center py-20 text-slate-400">Підключення до вітрини...</div>
+    </div>
+</main>
 
 <script>
-    // ОЧИЩЕНІ ДАНІ (БЕЗ ПРОБІЛІВ)
     const SUPABASE_URL = 'https://djrrojucwvafgvetdrnf.supabase.co'.trim();
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqcnJvanVjd3ZhZmd2ZXRkcm5mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2OTgwNjcsImV4cCI6MjA4NTI3NDA2N30.QLq_rJF6XwskKbOO3zjhSrF8DK3YnRscIIjJl0Kr2e4'.trim();
 
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     let isAdminMode = false;
 
+    // Автоматична перевірка сесії при завантаженні
+    async function checkUser() {
+        const { data: { user } } = await client.auth.getUser();
+        if (user) {
+            isAdminMode = true;
+            document.getElementById('adminPanel').classList.remove('hidden');
+            document.getElementById('authStatus').innerText = "Адмін";
+            document.getElementById('authStatus').className = "text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-600 uppercase";
+        }
+        loadData();
+    }
+
     async function loadData() {
         const grid = document.getElementById('productsGrid');
         const { data, error } = await client.from('products').select('*').order('created_at', { ascending: false });
         
         if (error) {
-            console.error("DEBUG:", error);
-            grid.innerHTML = `<div class="col-span-full text-center p-10 bg-red-50 text-red-600 rounded-2xl">
-                <b>Помилка:</b> ${error.message} <br>
-                <button onclick="location.reload()" class="mt-4 text-sm underline">Оновити сторінку</button>
-            </div>`;
+            grid.innerHTML = `<div class="col-span-full bg-red-50 text-red-500 p-4 rounded-xl text-center border border-red-100">Помилка: ${error.message}</div>`;
             return;
         }
 
-        grid.innerHTML = data.length ? '' : '<div class="col-span-full text-center py-20 text-slate-400">Товари не знайдені.</div>';
+        grid.innerHTML = data.length ? '' : '<div class="col-span-full text-center py-20 text-slate-300 italic">Товарів поки немає...</div>';
 
         data.forEach(p => {
             const card = document.createElement('div');
-            card.className = 'bg-white rounded-2xl shadow-sm border overflow-hidden hover:shadow-md transition-all relative';
+            card.className = 'bg-white rounded-3xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-xl transition-all relative group';
             card.innerHTML = `
-                <img src="${p.image}" class="w-full aspect-square object-cover">
-                <div class="p-4">
+                <div class="aspect-square bg-slate-50">
+                    <img src="${p.image}" class="w-full h-full object-cover">
+                </div>
+                <div class="p-5">
                     <h3 class="font-bold text-slate-800 mb-2 truncate">${p.name}</h3>
                     <div class="flex justify-between items-center">
-                        <span class="text-lg font-black">${p.price} грн</span>
-                        <a href="https://t.me/G_MED_COSMETICS" class="text-emerald-600 font-bold text-sm">Купити</a>
+                        <span class="text-xl font-black text-slate-900">${p.price} грн</span>
+                        <a href="https://t.me/G_MED_COSMETICS" target="_blank" class="text-emerald-600 font-bold hover:underline">Замовити</a>
                     </div>
                 </div>
             `;
             if (isAdminMode) {
                 const del = document.createElement('button');
-                del.className = 'absolute top-2 right-2 w-7 h-7 bg-red-500 text-white rounded-full text-xs';
-                del.innerHTML = '×';
+                del.className = 'absolute top-3 right-3 w-8 h-8 bg-red-500 text-white rounded-full shadow-lg hover:scale-110 transition-transform';
+                del.innerHTML = '<i class="fas fa-trash-alt text-xs"></i>';
                 del.onclick = () => deleteProduct(p.id);
                 card.appendChild(del);
             }
@@ -80,31 +109,53 @@
     }
 
     async function toggleAdmin() {
-        const email = prompt("Email:");
-        const pass = prompt("Pass:");
+        if (isAdminMode) {
+            await client.auth.signOut();
+            location.reload();
+            return;
+        }
+
+        const email = prompt("Email адміністратора:");
+        const pass = prompt("Пароль:");
+        if (!email || !pass) return;
+
         const { error } = await client.auth.signInWithPassword({ email, password: pass });
-        if (error) return alert("Помилка!");
-        isAdminMode = true;
-        document.getElementById('adminPanel').classList.toggle('hidden');
-        loadData();
+        if (error) {
+            alert("Вхід не вдався: " + error.message);
+        } else {
+            location.reload(); 
+        }
     }
 
     async function saveProduct() {
         const name = document.getElementById('name').value;
         const price = document.getElementById('price').value;
         const image = document.getElementById('image').value;
-        await client.from('products').insert([{ name, price, image }]);
-        location.reload();
-    }
 
-    async function deleteProduct(id) {
-        if(confirm('Видалити?')) {
-            await client.from('products').delete().eq('id', id);
-            loadData();
+        if (!name || !price || !image) return alert("Заповніть усі поля!");
+
+        // Важливо: перетворюємо ціну на число
+        const { error } = await client.from('products').insert([
+            { name, price: Number(price), image }
+        ]);
+
+        if (error) {
+            console.error("Full error:", error);
+            alert("ПОМИЛКА БАЗИ: " + error.message + "\n\nДеталі: " + error.details);
+        } else {
+            alert("Товар успішно додано!");
+            location.reload();
         }
     }
 
-    loadData();
+    async function deleteProduct(id) {
+        if (!confirm("Видалити цей товар?")) return;
+        const { error } = await client.from('products').delete().eq('id', id);
+        if (error) alert("Помилка видалення: " + error.message);
+        else loadData();
+    }
+
+    checkUser();
 </script>
 </body>
 </html>
