@@ -3,190 +3,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gmed Cosmetics | Admin Panel</title>
+    <title>Gmed Admin & Price</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        .product-card:hover .admin-controls { opacity: 1; }
+        .editor-btn { @apply p-2 bg-slate-100 rounded hover:bg-emerald-100 transition-colors text-xs font-bold; }
+        #editor { min-height: 80px; border: 1px solid #e2e8f0; border-radius: 1rem; padding: 12px; background: #f8fafc; outline: none; }
+        #editor:focus { border-color: #10b981; ring: 2px ring-emerald-500; }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen text-slate-900">
+<body class="bg-slate-50 min-h-screen">
 
-<header class="bg-white/80 backdrop-blur-md border-b sticky top-0 z-50 px-4 py-3">
-    <div class="container mx-auto flex justify-between items-center">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white font-black">G</div>
-            <h1 class="text-xl font-black uppercase tracking-tighter">G<span class="text-emerald-600">med</span></h1>
-        </div>
-        <div class="flex items-center gap-4">
-            <div id="statusBadge" class="text-[10px] font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-400 uppercase">Гість</div>
-            <button onclick="toggleAdmin()" class="text-slate-400 hover:text-emerald-600 transition-colors">
-                <i class="fas fa-user-shield text-xl"></i>
-            </button>
-        </div>
+<header class="bg-white border-b p-4 sticky top-0 z-50 flex justify-between items-center shadow-sm">
+    <div class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white font-bold">G</div>
+        <span class="font-black uppercase tracking-tighter">Admin Panel</span>
+    </div>
+    <div class="flex gap-2">
+        <button onclick="exportToCSV()" class="bg-slate-800 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-black transition-all flex items-center gap-2">
+            <i class="fas fa-file-export"></i> ВИГРУЗИТИ ПРАЙС
+        </button>
+        <button onclick="toggleAdmin()" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100"><i class="fas fa-user-shield text-slate-400"></i></button>
     </div>
 </header>
 
-<main class="container mx-auto p-6">
-    <div id="adminPanel" class="hidden bg-white border-2 border-emerald-500/20 p-6 rounded-3xl shadow-xl mb-10 transition-all">
-        <div class="flex justify-between items-center mb-6">
-            <h2 id="formTitle" class="text-sm font-black uppercase tracking-widest text-emerald-600">Додати товар</h2>
-            <button onclick="resetForm()" id="cancelBtn" class="hidden text-xs font-bold text-slate-400 hover:text-red-500">СКАСУВАТИ</button>
-        </div>
+<main class="container mx-auto p-4">
+    <div id="adminPanel" class="hidden bg-white p-6 rounded-3xl shadow-xl border-2 border-emerald-500/10 mb-8">
+        <h2 id="formTitle" class="text-xs font-black uppercase text-emerald-600 mb-4 tracking-widest">Керування товаром</h2>
         
-        <input type="hidden" id="editId">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <input type="text" id="name" placeholder="Назва товару" class="p-3 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
-            <input type="number" id="price" placeholder="Ціна (грн)" class="p-3 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
-            <input type="text" id="image" placeholder="URL фото (Cloudinary)" class="p-3 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
-            <button onclick="saveProduct()" id="saveBtn" class="bg-emerald-600 text-white font-black py-3 rounded-2xl hover:bg-emerald-700 shadow-lg shadow-emerald-200 uppercase text-xs tracking-widest">Зберегти</button>
+        <div class="grid grid-cols-1 gap-4">
+            <div class="space-y-2">
+                <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Назва та оформлення</label>
+                <div class="flex gap-1 mb-1">
+                    <button type="button" class="editor-btn" onclick="execCmd('bold')">B</button>
+                    <button type="button" class="editor-btn" onclick="execCmd('italic')">I</button>
+                    <button type="button" class="editor-btn" onclick="execCmd('foreColor', prompt('Введіть колір (напр. red, blue, #ff0000):'))"><i class="fas fa-palette"></i></button>
+                    <button type="button" class="editor-btn" onclick="execCmd('fontSize', prompt('Розмір (1-7):'))"><i class="fas fa-text-height"></i></button>
+                    <button type="button" class="editor-btn" onclick="execCmd('removeFormat')"><i class="fas fa-eraser"></i></button>
+                </div>
+                <div id="editor" contenteditable="true"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <input type="number" id="price" placeholder="Ціна (грн)" class="p-3 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500">
+                <input type="text" id="image" placeholder="URL фото" class="p-3 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500">
+                <div class="flex gap-2">
+                    <button onclick="saveProduct()" id="saveBtn" class="flex-1 bg-emerald-600 text-white font-black rounded-2xl uppercase text-xs tracking-widest hover:bg-emerald-700 transition-all">Зберегти</button>
+                    <button onclick="resetForm()" id="cancelBtn" class="hidden px-4 bg-slate-100 text-slate-500 rounded-2xl font-bold text-xs uppercase">X</button>
+                </div>
+            </div>
         </div>
+        <input type="hidden" id="editId">
     </div>
 
-    <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-        <div class="col-span-full text-center py-20">
-            <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-emerald-500 border-t-transparent mb-4"></div>
-            <p class="text-slate-400 font-bold uppercase text-xs tracking-widest">Завантаження асортименту...</p>
+    <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         </div>
-    </div>
 </main>
 
 <script>
     const SUPABASE_URL = 'https://djrrojucwvafgvetdrnf.supabase.co'.trim();
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqcnJvanVjd3ZhZmd2ZXRkcm5mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2OTgwNjcsImV4cCI6MjA4NTI3NDA2N30.QLq_rJF6XwskKbOO3zjhSrF8DK3YnRscIIjJl0Kr2e4'.trim();
-
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     let isAdminMode = false;
 
-    // 1. Перевірка авторизації
+    // ФУНКЦІЇ РЕДАКТОРА
+    function execCmd(cmd, value = null) {
+        document.execCommand(cmd, false, value);
+    }
+
+    // ВИГРУЗКА В CSV (EXCEL)
+    async function exportToCSV() {
+        const { data, error } = await client.from('products').select('name, price, image');
+        if (error) return alert("Помилка при отриманні даних");
+
+        let csvContent = "data:text/csv;charset=utf-8,Name,Price,Image\n";
+        data.forEach(row => {
+            // Очищаємо HTML теги для чистого тексту в Excel, якщо потрібно, 
+            // або залишаємо як є. Тут залишаємо для збереження форматування.
+            let cleanName = row.name.replace(/"/g, '""'); 
+            csvContent += `"${cleanName}",${row.price},"${row.image}"\n`;
+        });
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `gmed_price_${new Date().toLocaleDateString()}.csv`);
+        document.body.appendChild(link);
+        link.click();
+    }
+
     async function checkUser() {
         const { data: { user } } = await client.auth.getUser();
         if (user) {
             isAdminMode = true;
             document.getElementById('adminPanel').classList.remove('hidden');
-            document.getElementById('statusBadge').innerText = "Адмін";
-            document.getElementById('statusBadge').className = "text-[10px] font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-600 uppercase";
         }
         loadData();
     }
 
-    // 2. Завантаження даних
     async function loadData() {
         const grid = document.getElementById('productsGrid');
+        const { data, error } = await client.from('products').select('*').order('created_at', { ascending: false });
         
-        try {
-            const { data, error } = await client.from('products').select('*').order('created_at', { ascending: false });
-            
-            if (error) throw error;
+        if (error) return;
+        grid.innerHTML = '';
 
-            grid.innerHTML = data.length ? '' : '<div class="col-span-full text-center py-20 text-slate-300 font-medium">Товарів ще не додано.</div>';
-
-            data.forEach(p => {
-                const card = document.createElement('div');
-                card.className = 'product-card bg-white rounded-[2.5rem] overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 relative group border border-slate-100';
-                card.innerHTML = `
-    <div class="aspect-square overflow-hidden bg-slate-50">
-        <img src="${p.image}" class="w-full h-full object-cover">
-    </div>
-    <div class="p-6">
-        <div class="font-bold text-slate-800 mb-2 min-h-[3rem]">
-            ${p.name} 
-        </div>
-        <div class="flex justify-between items-center">
-            <span class="text-2xl font-black text-slate-900">${p.price} грн</span>
-            <a href="https://t.me/VikusyaGuzeeva" class="...">Замовити</a>
-        </div>
-    </div>
-`;
-
-                if (isAdminMode) {
-                    const controls = document.createElement('div');
-                    controls.className = 'admin-controls absolute top-4 right-4 flex gap-2 opacity-0 transition-opacity duration-300';
-                    controls.innerHTML = `
-                        <button onclick="prepareEdit('${p.id}', '${p.name.replace(/'/g, "\\'")}', ${p.price}, '${p.image}')" class="w-10 h-10 bg-white shadow-xl rounded-2xl text-blue-600 hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center">
-                            <i class="fas fa-pen text-xs"></i>
-                        </button>
-                        <button onclick="deleteProduct('${p.id}')" class="w-10 h-10 bg-white shadow-xl rounded-2xl text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center">
-                            <i class="fas fa-trash-alt text-xs"></i>
-                        </button>
-                    `;
-                    card.appendChild(controls);
-                }
-                grid.appendChild(card);
-            });
-        } catch (err) {
-            grid.innerHTML = `<div class="col-span-full bg-red-50 text-red-600 p-8 rounded-3xl border border-red-100 text-center">
-                <p class="font-black uppercase text-xs mb-2">Помилка підключення</p>
-                <p class="text-sm opacity-80">${err.message}</p>
-                <button onclick="location.reload()" class="mt-4 text-xs font-bold underline">Спробувати ще раз</button>
-            </div>`;
-        }
+        data.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'bg-white rounded-[2rem] overflow-hidden shadow-sm border border-slate-100 hover:shadow-xl transition-all relative group';
+            card.innerHTML = `
+                <div class="aspect-square bg-slate-50"><img src="${p.image}" class="w-full h-full object-cover"></div>
+                <div class="p-6">
+                    <div class="text-slate-800 mb-4 leading-tight">${p.name}</div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xl font-black">${p.price} грн</span>
+                        <a href="https://t.me/VikusyaGuzeeva" class="text-emerald-600 font-bold text-xs uppercase tracking-widest">Замовити</a>
+                    </div>
+                </div>
+            `;
+            if (isAdminMode) {
+                const tools = document.createElement('div');
+                tools.className = 'absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity';
+                tools.innerHTML = `
+                    <button onclick="prepareEdit('${p.id}', \`${p.name}\`, ${p.price}, '${p.image}')" class="w-8 h-8 bg-white rounded-full text-blue-600 shadow-md"><i class="fas fa-pen text-[10px]"></i></button>
+                    <button onclick="deleteProduct('${p.id}')" class="w-8 h-8 bg-white rounded-full text-red-500 shadow-md"><i class="fas fa-trash text-[10px]"></i></button>
+                `;
+                card.appendChild(tools);
+            }
+            grid.appendChild(card);
+        });
     }
 
-    // 3. Функції Адміна
     function prepareEdit(id, name, price, image) {
         document.getElementById('editId').value = id;
-        document.getElementById('name').value = name;
+        document.getElementById('editor').innerHTML = name;
         document.getElementById('price').value = price;
         document.getElementById('image').value = image;
-        
-        document.getElementById('formTitle').innerText = "Редагування товару";
-        document.getElementById('saveBtn').innerText = "Оновити";
-        document.getElementById('saveBtn').className = "bg-blue-600 text-white font-black py-3 rounded-2xl hover:bg-blue-700 shadow-lg shadow-blue-200 uppercase text-xs tracking-widest cursor-pointer";
         document.getElementById('cancelBtn').classList.remove('hidden');
+        document.getElementById('saveBtn').innerText = "Оновити";
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function resetForm() {
         document.getElementById('editId').value = "";
-        document.getElementById('name').value = "";
+        document.getElementById('editor').innerHTML = "";
         document.getElementById('price').value = "";
         document.getElementById('image').value = "";
-        document.getElementById('formTitle').innerText = "Додати товар";
         document.getElementById('saveBtn').innerText = "Зберегти";
-        document.getElementById('saveBtn').className = "bg-emerald-600 text-white font-black py-3 rounded-2xl hover:bg-emerald-700 shadow-lg shadow-emerald-200 uppercase text-xs tracking-widest";
         document.getElementById('cancelBtn').classList.add('hidden');
     }
 
     async function saveProduct() {
         const id = document.getElementById('editId').value;
-        const name = document.getElementById('name').value;
+        const name = document.getElementById('editor').innerHTML;
         const price = document.getElementById('price').value;
         const image = document.getElementById('image').value;
 
-        if (!name || !price || !image) return alert("Заповніть всі поля");
+        if (!name || !price) return alert("Заповніть назву та ціну!");
 
-        const productData = { name, price: Number(price), image };
-        let res;
+        const payload = { name, price: Number(price), image };
+        const { error } = id 
+            ? await client.from('products').update(payload).eq('id', id)
+            : await client.from('products').insert([payload]);
 
-        if (id) {
-            res = await client.from('products').update(productData).eq('id', id);
-        } else {
-            res = await client.from('products').insert([productData]);
-        }
-
-        if (res.error) alert("Помилка: " + res.error.message);
+        if (error) alert(error.message);
         else { resetForm(); loadData(); }
     }
 
     async function deleteProduct(id) {
-        if (!confirm("Видалити товар?")) return;
-        const { error } = await client.from('products').delete().eq('id', id);
-        if (error) alert("Помилка");
-        else loadData();
+        if (confirm("Видалити?")) {
+            await client.from('products').delete().eq('id', id);
+            loadData();
+        }
     }
 
     async function toggleAdmin() {
         if (isAdminMode) { await client.auth.signOut(); location.reload(); return; }
         const email = prompt("Email:");
-        const pass = prompt("Пароль:");
-        if (!email || !pass) return;
+        const pass = prompt("Pass:");
         const { error } = await client.auth.signInWithPassword({ email, password: pass });
-        if (error) alert("Помилка входу");
-        else location.reload();
+        if (error) alert("Помилка"); else location.reload();
     }
 
     checkUser();
