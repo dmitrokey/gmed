@@ -200,4 +200,27 @@
         document.getElementById('description').value = p.description;
         document.getElementById('saveBtn').innerText = "Оновити товар";
         document.getElementById('cancelBtn').classList.remove('hidden');
-        window.scrollTo({ top: 0, behavior
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetForm() {
+        document.getElementById('editId').value = "";
+        document.getElementById('editor').innerHTML = "";
+        ['price_text', 'dosage', 'category', 'image_url', 'description'].forEach(id => document.getElementById(id).value = "");
+        document.getElementById('saveBtn').innerText = "Зберегти";
+        document.getElementById('cancelBtn').classList.add('hidden');
+    }
+
+    async function deleteProduct(id) { if(confirm("Видалити?")) { await client.from('products').delete().eq('id', id); loadData(); } }
+
+    async function toggleAdmin() {
+        if (isAdminMode) { await client.auth.signOut(); location.reload(); return; }
+        const email = prompt("Email:"); const pass = prompt("Password:");
+        const { error } = await client.auth.signInWithPassword({ email, password: pass });
+        if (error) alert("Помилка"); else location.reload();
+    }
+
+    init();
+</script>
+</body>
+</html>
