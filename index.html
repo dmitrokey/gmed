@@ -404,69 +404,60 @@ window.editById = function(id) {
         }
     }
     
-function generatePDF() {
+async function generatePDF() {
     const visible = currentFilter === 'Всі' ? allProducts : allProducts.filter(p => p.category === currentFilter);
     const printWindow = window.open('', '_blank');
     
     const categories = [...new Set(visible.map(p => p.category || 'Інше'))].sort();
 
+    // Функція для попереднього завантаження зображень
+    const preloadImages = (products) => {
+        return Promise.all(products.map(p => {
+            return new Promise((resolve) => {
+                if (!p.image_url) resolve();
+                const img = new Image();
+                img.src = p.image_url;
+                img.onload = resolve;
+                img.onerror = resolve; // Продовжуємо навіть якщо фото бите
+            });
+        }));
+    };
+
+    await preloadImages(visible);
+
     let html = `
     <html>
     <head>
-        <title>Прайс GMED COSMETICS</title>
+        <title>Прайс GMED</title>
         <style>
-            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+            body { font-family: 'Inter', sans-serif; margin: 0; padding: 10px; color: #000; }
             
-            body { font-family: 'Inter', sans-serif; margin: 0; padding: 15px; color: #000; }
+            table { width: 100%; border-collapse: collapse; table-layout: auto; }
+            th, td { border: 1px solid #000; padding: 6px; font-size: 11px; vertical-align: middle; }
             
-            table { 
-                width: 100%; 
-                border-collapse: collapse; 
-                table-layout: auto; /* Дозволяємо браузеру самому визначати ширину */
-            }
-            
-            th, td { 
-                border: 1px solid #000; 
-                padding: 6px 8px; 
-                font-size: 11px; 
-                vertical-align: middle;
-            }
-
-            /* Категорія - зелена плашка на всю ширину */
+            /* Секція категорій точно як на фото */
             .cat-header { 
-                background-color: #92d050 !important; 
-                font-weight: 700; 
-                text-transform: uppercase;
+                background: #92d050 !important; 
+                font-weight: bold; 
+                text-transform: uppercase; 
                 padding: 4px 10px;
             }
             
-            /* Перша колонка отримує максимум місця */
-            .col-info { text-align: left; }
-            
-            /* Колонки з фіксованим мінімальним вмістом */
+            /* Перша колонка — найширша */
+            .col-info { width: auto; text-align: left; }
+            /* Інші — компактні */
             .col-unit { width: 60px; text-align: center; white-space: nowrap; }
-            .col-img { width: 90px; text-align: center; }
-            .col-prices { width: 180px; text-align: left; white-space: nowrap; }
+            .col-img { width: 85px; text-align: center; }
+            .col-prices { width: 170px; text-align: left; line-height: 1.3; }
 
-            .product-name { font-weight: 700; font-size: 12px; }
-            .cert-text { color: #38761d; font-weight: 500; }
-            .product-desc { 
-                font-size: 10px; 
-                color: #333; 
-                line-height: 1.2; 
-                margin-top: 3px;
-                display: block;
-            }
+            .product-name { font-weight: bold; font-size: 12px; }
+            .cert-label { color: #38761d; font-weight: bold; font-size: 11px; }
+            .description { font-size: 10px; color: #333; display: block; margin-top: 2px; line-height: 1.2; }
             
-            .img-preview { 
-                max-width: 80px; 
-                max-height: 70px; 
-                object-fit: contain; 
-                display: block; 
-                margin: 0 auto; 
-            }
+            .prod-img { max-width: 80px; max-height: 65px; object-fit: contain; }
             
-            .price-entry { font-size: 10.5px; margin-bottom: 1px; font-weight: 500; }
+            .price-line { white-space: nowrap; font-size: 10.5px; margin-bottom: 1px; }
 
             @media print {
                 tr { page-break-inside: avoid; }
@@ -480,38 +471,32 @@ function generatePDF() {
                 <tr><td colspan="4" class="cat-header">${cat}</td></tr>
                 ${visible.filter(p => (p.category || 'Інше') === cat).map(p => {
                     
-                    // Логіка цін (Гривня або Євро з конвертацією)
-                    const getPriceLabel = (val, price) => {
+                    const formatPrice = (q, price) => {
                         if (!price) return "";
-                        let formattedPrice = "";
+                        let text = q > 1 ? `Від ${q} шт. - ` : `Від 1 шт. - `;
                         if (p.is_special_rate) {
                             const rate = p.is_special_rate === 1 ? rates.spec1 : rates.spec2;
-                            formattedPrice = `${price} € = ${Math.round(price * rate)} грн.`;
-                        } else {
-                            formattedPrice = `${price} грн.`;
+                            return `<div class="price-line">${text}${price} € = ${Math.round(price * rate)} грн.</div>`;
                         }
-                        return `<div class="price-entry">${val > 1 ? 'Від ' + val + ' шт. - ' : 'Від 1 шт. - '}${formattedPrice}</div>`;
+                        return `<div class="price-line">${text}${price} грн.</div>`;
                     };
 
-                    let priceRows = getPriceLabel(1, p.price_base);
-                    if (p.condition_2_val) priceRows += getPriceLabel(p.condition_2_val, p.price_2_usd_eur);
-                    if (p.condition_3_val) priceRows += getPriceLabel(p.condition_3_val, p.price_3_usd_eur);
-                    if (p.condition_4_val) priceRows += getPriceLabel(p.condition_4_val, p.price_4_usd_eur);
+                    let prices = formatPrice(1, p.price_base);
+                    if (p.condition_2_val) prices += formatPrice(p.condition_2_val, p.price_2_usd_eur);
+                    if (p.condition_3_val) prices += formatPrice(p.condition_3_val, p.price_3_usd_eur);
+                    if (p.condition_4_val) prices += formatPrice(p.condition_4_val, p.price_4_usd_eur);
 
                     return `
                     <tr>
                         <td class="col-info">
-                            <span class="product-name">${p.name}</span> 
-                            <span class="cert-text">оригінал!!сертифікований в Україні</span>
-                            <span class="product-desc">${p.description || ''}</span>
+                            <span class="product-name">${p.name}</span>
+                            <span class="description">${p.description || ''}</span>
                         </td>
                         <td class="col-unit">${p.dosage || ''}</td>
                         <td class="col-img">
-                            <img src="${p.image_url}" class="img-preview" onerror="this.style.display='none'">
+                            ${p.image_url ? `<img src="${p.image_url}" class="prod-img">` : ''}
                         </td>
-                        <td class="col-prices">
-                            ${priceRows}
-                        </td>
+                        <td class="col-prices">${prices}</td>
                     </tr>`;
                 }).join('')}
             `).join('')}
@@ -522,8 +507,8 @@ function generatePDF() {
     printWindow.document.write(html);
     printWindow.document.close();
     
-    // Невелика затримка для завантаження картинок перед друком
-    setTimeout(() => { printWindow.print(); }, 700);
+    // Даємо ще 300мс на фінальний рендер після завантаження
+    setTimeout(() => { printWindow.print(); }, 300);
 }
 
 window.toggleDescription = function(productId, buttonElement) {
