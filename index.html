@@ -487,28 +487,36 @@ async function generatePDF() {
                 ${visible.filter(p => (p.category || 'Інше') === cat).map(p => {
                     
               // Тепер точно дублюємо як на сайті, нічого не додаємо додатково
-const formatPrice = (p, price, qty=null) => {
+const formatPrice = (p, price, qty=null, unit=null) => {
     if (!price) return '';
     let amount = price;
 
-    // Розрахунок грн по спецкурсу, якщо застосований
     if (p.is_special_rate === 1) amount = Math.round(price * rates.spec1);
     else if (p.is_special_rate === 2) amount = Math.round(price * rates.spec2);
 
-    // Просто дублюємо відображення як на сайті
-    if (qty) {
-        return `<div class="price-line">Від ${qty} шт. - ${price} ${p.currency || 'грн'}${(p.is_special_rate ? ` = ${amount} ₴` : '')}</div>`;
-    } else {
-        return `<div class="price-line">${price} ${p.currency || 'грн'}${(p.is_special_rate ? ` = ${amount} ₴` : '')}</div>`;
-    }
+    const qtyText = qty ? `${qty}${unit ? ' ' + unit : ''}` : '';
+
+    return `
+        <div class="price-line">
+            ${qtyText ? qtyText + ' – ' : ''}
+            ${price} ${p.currency || 'грн'}
+            ${p.is_special_rate ? ` = ${amount} ₴` : ''}
+        </div>
+    `;
 };
+
 
 
                // Використовуємо форматування з сайту
 let prices = formatPrice(p, p.price_base); // базова ціна
-if (p.condition_2_val) prices += formatPrice(p, p.price_2_usd_eur, p.condition_2_val);
-if (p.condition_3_val) prices += formatPrice(p, p.price_3_usd_eur, p.condition_3_val);
-if (p.condition_4_val) prices += formatPrice(p, p.price_4_usd_eur, p.condition_4_val);
+if (p.condition_2_val)
+    prices += formatPrice(p, p.price_2_usd_eur, p.condition_2_val, p.condition_2_unit);
+
+if (p.condition_3_val)
+    prices += formatPrice(p, p.price_3_usd_eur, p.condition_3_val, p.condition_3_unit);
+
+if (p.condition_4_val)
+    prices += formatPrice(p, p.price_4_usd_eur, p.condition_4_val, p.condition_4_unit);
 
 
                     return `
@@ -534,7 +542,7 @@ if (p.condition_4_val) prices += formatPrice(p, p.price_4_usd_eur, p.condition_4
     
     // Даємо ще 300мс на фінальний рендер після завантаження
     setTimeout(() => { printWindow.print(); }, 300);
-}
+}   
 
 window.toggleDescription = function(productId, buttonElement) {
     const descriptionBox = document.getElementById('desc-' + productId);
