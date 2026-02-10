@@ -582,28 +582,28 @@ window.filterByCategory = function(category) {
 <script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
 <script>
 function openUploadWidget() {
-    const widget = cloudinary.createUploadWidget({
-        cloudName: 'dtmvidhde',
-        uploadPreset: 'products_unsigned',
-        cropping: true,
-        croppingAspectRatio: 1,
-        croppingCoordinatesMode: 'custom',
-        multiple: false,
-        folder: 'products'
-    }, (error, result) => {
-        if (!error && result && result.event === "success") {
-            const url = result.info.secure_url;
-            document.getElementById('modalPreview').src = url;
-            document.getElementById('f_image_url').value = url;
-        } else if (error) {
-            console.error("Upload Widget Error:", error);
-        }
-    });
+   const widget = cloudinary.createUploadWidget({
+       cloudName: 'dtmvidhde',
+       uploadPreset: 'products_unsigned',
+       cropping: true,                  // вмикає інтерфейс обрізки
+       croppingAspectRatio: 1,          // квадрат
+       croppingCoordinatesMode: 'custom', // брати тільки виділену частину
+       multiple: false,
+       folder: 'products'
+   }, (error, result) => {
+       if (!error && result && result.event === "success") {
+           const url = result.info.secure_url;
+           document.getElementById('modalPreview').src = url;
+           document.getElementById('f_image_url').value = url;
+       } else if (error) {
+           console.error("Upload Widget Error:", error);
+       }
+   });
 
-    widget.open(); // <-- обов’язково відкриваємо віджет
+   widget.open(); // <--- ця команда обов'язкова для відкриття виділення/обрізки
 }
-
 </script>
+
 
 
 
