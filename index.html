@@ -575,14 +575,14 @@ window.filterByCategory = function(category) {
 
 
     init();
-
-
 </script>
+
+    
 <!-- Cloudinary Widget -->
 <script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
-
 <script>
 function openUploadWidget() {
+    // Створюємо віджет
     const widget = cloudinary.createUploadWidget({
         cloudName: 'dtmvidhde',
         uploadPreset: 'products_unsigned',
@@ -594,6 +594,7 @@ function openUploadWidget() {
         defaultSource: 'local',
     }, (error, result) => {
         if (!error && result && result.event === "success") {
+            // Завантажене фото
             const url = result.info.secure_url;
             document.getElementById('modalPreview').src = url;
             document.getElementById('f_image_url').value = url;
@@ -605,13 +606,12 @@ function openUploadWidget() {
     widget.open();
 }
 
-// Для вставки URL вручну
+// Якщо користувач вставляє URL вручну
 document.getElementById('f_image_url').addEventListener('input', function() {
     document.getElementById('modalPreview').src = this.value;
 });
-
-
 </script>
+
 
 
 
