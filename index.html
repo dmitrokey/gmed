@@ -582,7 +582,7 @@ window.filterByCategory = function(category) {
 <script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
 <script>
 function openUploadWidget() {
-   const widget = cloudinary.createUploadWidget({
+    const widget = cloudinary.createUploadWidget({
         cloudName: 'dtmvidhde',
         uploadPreset: 'products_unsigned',
         cropping: true,
@@ -600,7 +600,7 @@ function openUploadWidget() {
         }
     });
 
-   widget.open();  // ⚠️ Ось важливе – викликаємо віджет
+    widget.open(); // <-- обов’язково відкриваємо віджет
 }
 
 </script>
