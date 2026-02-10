@@ -585,27 +585,28 @@ function openUploadWidget() {
    const widget = cloudinary.createUploadWidget({
        cloudName: 'dtmvidhde',
        uploadPreset: 'products_unsigned',
-       cropping: true,                  // вмикає інтерфейс обрізки
+       cropping: true,                  // включає обрізку
        croppingAspectRatio: 1,          // квадрат
-       croppingCoordinatesMode: 'custom', // брати тільки виділену частину
        multiple: false,
-       folder: 'products'
-       eager: [
-           { width: 500, height: 500, crop: "fill" }
-       ]
+       folder: 'products',
+       showAdvancedOptions: false,
+       maxImageFileSize: 2000000,
+       clientAllowedFormats: ["jpg","png","jpeg"]
    }, (error, result) => {
        if (!error && result && result.event === "success") {
            const url = result.info.secure_url;
            document.getElementById('modalPreview').src = url;
            document.getElementById('f_image_url').value = url;
+           console.log("Uploaded URL:", url);
        } else if (error) {
            console.error("Upload Widget Error:", error);
        }
    });
 
-   widget.open(); // <--- ця команда обов'язкова для відкриття виділення/обрізки
+   widget.open();
 }
 </script>
+
 
 
 
