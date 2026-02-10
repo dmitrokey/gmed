@@ -585,15 +585,14 @@ function openUploadWidget() {
     const widget = cloudinary.createUploadWidget({
         cloudName: 'dtmvidhde',
         uploadPreset: 'products_unsigned',
-        cropping: true,                  // Вмикаємо обрізку
-        croppingAspectRatio: 1,          // квадрат
-        croppingShowBackButton: true,    // показати кнопку "Назад" після обрізки
+        cropping: true,                  // обрізка увімкнена, але працює тільки для локальних файлів
+        croppingAspectRatio: 1,
+        croppingCoordinatesMode: 'custom',
         multiple: false,
         folder: 'products',
-        sources: ['local', 'url'],       // підтримка локальних і URL
-        defaultSource: 'local',          // відкривати локальні файли за замовчуванням
+        sources: ['local', 'url'],       // доступні обидва варіанти
         showAdvancedOptions: false,
-        clientAllowedFormats: ["png","jpg","jpeg"],
+        showCompletedButton: true
     }, (error, result) => {
         if (!error && result && result.event === "success") {
             const url = result.info.secure_url;
@@ -606,14 +605,8 @@ function openUploadWidget() {
 
     widget.open();
 }
-
-// Додатково: live preview при вставці URL
-document.getElementById('f_image_url').addEventListener('input', function() {
-    document.getElementById('modalPreview').src = this.value;
-});
-
-
 </script>
+
 
 
 
