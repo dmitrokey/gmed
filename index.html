@@ -582,22 +582,23 @@ window.filterByCategory = function(category) {
 <script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
 <script>
 function openUploadWidget() {
-    // Створюємо віджет
     const widget = cloudinary.createUploadWidget({
         cloudName: 'dtmvidhde',
         uploadPreset: 'products_unsigned',
-        cropping: true,               // обрізка для локальних файлів
-        croppingAspectRatio: 1,       // квадрат
+        cropping: true, // обрізка доступна тільки для локальних файлів
+        croppingAspectRatio: 1,
         multiple: false,
         folder: 'products',
-        sources: ['local', 'camera'], // тільки локальні файли
+        sources: ['local', 'url'], // додаємо можливість вставки URL
         defaultSource: 'local',
     }, (error, result) => {
-        if (!error && result && result.event === "success") {
-            // Завантажене фото
-            const url = result.info.secure_url;
-            document.getElementById('modalPreview').src = url;
-            document.getElementById('f_image_url').value = url;
+        if (!error && result) {
+            if (result.event === "success") {
+                // Отримуємо secure_url вже обрізаного або просто завантаженого фото
+                const url = result.info.secure_url;
+                document.getElementById('modalPreview').src = url;
+                document.getElementById('f_image_url').value = url;
+            }
         } else if (error) {
             console.error("Upload Widget Error:", error);
         }
@@ -606,10 +607,11 @@ function openUploadWidget() {
     widget.open();
 }
 
-// Якщо користувач вставляє URL вручну
+// Додатково: щоб можна було вставляти URL вручну і бачити preview
 document.getElementById('f_image_url').addEventListener('input', function() {
     document.getElementById('modalPreview').src = this.value;
 });
+
 </script>
 
 
