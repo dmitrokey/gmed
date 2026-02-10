@@ -561,19 +561,22 @@ window.filterByCategory = function(category) {
 <script>
 function openUploadWidget() {
     const widget = cloudinary.createUploadWidget({
-        cloudName: 'YOUR_CLOUD_NAME',       // заміни на свій Cloudinary cloudName
-        uploadPreset: 'products_unsigned',   // твій Unsigned Upload Preset
-        cropping: true,                      // обрізка фото (опційно)
-        multiple: false                       // одне фото за раз
+        cloudName: 'dmitrokey',
+        uploadPreset: 'products_unsigned',
+        cropping: true,
+        multiple: false
     }, (error, result) => {
         if (!error && result && result.event === "success") {
-            document.getElementById('modalPreview').src = result.info.secure_url;
-            document.getElementById('f_image_url').value = result.info.secure_url;
+            const url = result.info.secure_url;
+            document.getElementById('modalPreview').src = url;
+            document.getElementById('f_image_url').value = url;
         }
     });
-    widget.open();
+
+    widget.open(); // <- важливо! відкриває віджет
 }
 </script>
+
 
 </body>
 </html>
