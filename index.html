@@ -112,6 +112,7 @@
                 <input type="text" id="f_category" placeholder="Бренд/Категорія" class="bg-slate-50 rounded-lg p-2 text-xs font-bold outline-none border border-slate-100">
                 <input type="text" id="f_dosage" placeholder="Об'єм (напр. 50мл)" class="bg-slate-50 rounded-lg p-2 text-xs font-bold outline-none border border-slate-100">
             </div>
+            <button type="button" onclick="openUploadWidget()" class="bg-blue-600 text-white px-3 py-2 rounded-lg text-[10px]">Завантажити фото</button>
 
             <input type="text" id="f_image_url" oninput="document.getElementById('modalPreview').src=this.value" placeholder="URL зображення" class="w-full bg-slate-50 rounded-lg p-2 text-[10px] outline-none border border-slate-100">
 
@@ -555,5 +556,24 @@ window.filterByCategory = function(category) {
 
 
 </script>
+<!-- Cloudinary Widget -->
+<script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
+<script>
+function openUploadWidget() {
+    const widget = cloudinary.createUploadWidget({
+        cloudName: 'YOUR_CLOUD_NAME',       // заміни на свій Cloudinary cloudName
+        uploadPreset: 'products_unsigned',   // твій Unsigned Upload Preset
+        cropping: true,                      // обрізка фото (опційно)
+        multiple: false                       // одне фото за раз
+    }, (error, result) => {
+        if (!error && result && result.event === "success") {
+            document.getElementById('modalPreview').src = result.info.secure_url;
+            document.getElementById('f_image_url').value = result.info.secure_url;
+        }
+    });
+    widget.open();
+}
+</script>
+
 </body>
 </html>
