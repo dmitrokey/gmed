@@ -109,8 +109,13 @@
             <textarea id="f_description" placeholder="Опис товару (склад, застосування...)" rows="3" class="w-full bg-slate-50 rounded-xl p-3 text-xs outline-none border border-slate-100 resize-none"></textarea>
 
             <div class="grid grid-cols-2 gap-2">
-                <input type="text" id="f_category" placeholder="Бренд/Категорія" class="bg-slate-50 rounded-lg p-2 text-xs font-bold outline-none border border-slate-100">
-                <input type="text" id="f_dosage" placeholder="Об'єм (напр. 50мл)" class="bg-slate-50 rounded-lg p-2 text-xs font-bold outline-none border border-slate-100">
+                <input list="categoriesList" id="f_category" placeholder="Категорія" class="bg-slate-50 rounded-lg p-2 text-xs font-bold outline-none border border-slate-100">
+
+<datalist id="categoriesList">
+    <!-- JS буде додавати опції сюди -->
+</datalist>
+
+                <input type="text" id="f_dosage" placeholder="Одиниці товару (шт., уп. шпр.)" class="bg-slate-50 rounded-lg p-2 text-xs font-bold outline-none border border-slate-100">
             </div>
             <button type="button" onclick="openUploadWidget()" class="bg-blue-600 text-white px-3 py-2 rounded-lg text-[10px]">Завантажити фото</button>
 
@@ -203,6 +208,14 @@ async function init() {
     loadData();
 }
 
+function populateCategoryDatalist() {
+    const datalist = document.getElementById('categoriesList');
+    const categories = [...new Set(allProducts.map(p => p.category).filter(Boolean))].sort();
+    
+    datalist.innerHTML = categories.map(c => `<option value="${c}">`).join('');
+}
+
+
     async function loadData() {
         const { data, error } = await client.from('products_2').select('*').order('sort_num', { ascending: true });
         if (data) { 
@@ -216,6 +229,7 @@ allProducts.sort((a, b) => {
 
 renderProducts(allProducts);
             renderCats(); 
+            populateCategoryDatalist(); // <-- Додати цей рядок
         }
     }
 
@@ -577,6 +591,8 @@ function openUploadWidget() {
 
     widget.open();
 }
+
+
 
 </script>
 
