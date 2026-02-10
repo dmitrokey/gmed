@@ -471,20 +471,30 @@ async function generatePDF() {
                 <tr><td colspan="4" class="cat-header">${cat}</td></tr>
                 ${visible.filter(p => (p.category || 'Інше') === cat).map(p => {
                     
-                    const formatPrice = (q, price) => {
-                        if (!price) return "";
-                        let text = q > 1 ? `Від ${q} шт. - ` : `Від 1 шт. - `;
-                        if (p.is_special_rate) {
-                            const rate = p.is_special_rate === 1 ? rates.spec1 : rates.spec2;
-                            return `<div class="price-line">${text}${price} € = ${Math.round(price * rate)} грн.</div>`;
-                        }
-                        return `<div class="price-line">${text}${price} грн.</div>`;
-                    };
+              // Тепер точно дублюємо як на сайті, нічого не додаємо додатково
+const formatPrice = (p, price, qty=null) => {
+    if (!price) return '';
+    let amount = price;
 
-                    let prices = formatPrice(1, p.price_base);
-                    if (p.condition_2_val) prices += formatPrice(p.condition_2_val, p.price_2_usd_eur);
-                    if (p.condition_3_val) prices += formatPrice(p.condition_3_val, p.price_3_usd_eur);
-                    if (p.condition_4_val) prices += formatPrice(p.condition_4_val, p.price_4_usd_eur);
+    // Розрахунок грн по спецкурсу, якщо застосований
+    if (p.is_special_rate === 1) amount = Math.round(price * rates.spec1);
+    else if (p.is_special_rate === 2) amount = Math.round(price * rates.spec2);
+
+    // Просто дублюємо відображення як на сайті
+    if (qty) {
+        return `<div class="price-line">Від ${qty} шт. - ${price} ${p.currency || 'грн'}${(p.is_special_rate ? ` = ${amount} ₴` : '')}</div>`;
+    } else {
+        return `<div class="price-line">${price} ${p.currency || 'грн'}${(p.is_special_rate ? ` = ${amount} ₴` : '')}</div>`;
+    }
+};
+
+
+               // Використовуємо форматування з сайту
+let prices = formatPrice(p, p.price_base); // базова ціна
+if (p.condition_2_val) prices += formatPrice(p, p.price_2_usd_eur, p.condition_2_val);
+if (p.condition_3_val) prices += formatPrice(p, p.price_3_usd_eur, p.condition_3_val);
+if (p.condition_4_val) prices += formatPrice(p, p.price_4_usd_eur, p.condition_4_val);
+
 
                     return `
                     <tr>
