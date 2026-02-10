@@ -561,8 +561,8 @@ window.filterByCategory = function(category) {
 <script>
 function openUploadWidget() {
     const widget = cloudinary.createUploadWidget({
-        cloudName: 'dmitrokey',
-        uploadPreset: 'products_unsigned',
+        cloudName: 'dtmvidhde',      // Оновлено!
+        uploadPreset: 'products_unsigned',  // має бути unsigned preset
         cropping: true,
         multiple: false
     }, (error, result) => {
@@ -570,11 +570,14 @@ function openUploadWidget() {
             const url = result.info.secure_url;
             document.getElementById('modalPreview').src = url;
             document.getElementById('f_image_url').value = url;
+        } else if (error) {
+            console.error("Upload Widget Error:", error);
         }
     });
 
-    widget.open(); // <- важливо! відкриває віджет
+    widget.open();
 }
+
 </script>
 
 
