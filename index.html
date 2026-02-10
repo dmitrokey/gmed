@@ -590,6 +590,9 @@ function openUploadWidget() {
        croppingCoordinatesMode: 'custom', // брати тільки виділену частину
        multiple: false,
        folder: 'products'
+       eager: [
+           { width: 500, height: 500, crop: "fill" }
+       ]
    }, (error, result) => {
        if (!error && result && result.event === "success") {
            const url = result.info.secure_url;
