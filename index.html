@@ -585,9 +585,9 @@ function openUploadWidget() {
    const widget = cloudinary.createUploadWidget({
         cloudName: 'dtmvidhde',
         uploadPreset: 'products_unsigned',
-        cropping: true,                  // вмикає інтерфейс обрізки
-        croppingAspectRatio: 1,          // квадрат, можна інший
-        croppingCoordinatesMode: 'custom', // важливо, щоб брало тільки обране
+        cropping: true,
+        croppingAspectRatio: 1,
+        croppingCoordinatesMode: 'custom',
         multiple: false,
         folder: 'products'
     }, (error, result) => {
@@ -600,9 +600,9 @@ function openUploadWidget() {
         }
     });
 
-    // Ось тут відкриваємо віджет
-    widget.open();
+   widget.open();  // ⚠️ Ось важливе – викликаємо віджет
 }
+
 </script>
 
 
