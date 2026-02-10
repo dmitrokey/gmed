@@ -582,17 +582,24 @@ window.filterByCategory = function(category) {
 <script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
 <script>
 function openUploadWidget() {
+    const inputUrl = prompt("Вставте URL зображення (залиште пустим для завантаження файлу):");
+
+    if (inputUrl) {
+        // Вставка URL без обрізки
+        document.getElementById('modalPreview').src = inputUrl;
+        document.getElementById('f_image_url').value = inputUrl;
+        return;
+    }
+
+    // Якщо URL не вставили, відкриваємо локальний файл через Cloudinary Widget
     const widget = cloudinary.createUploadWidget({
         cloudName: 'dtmvidhde',
         uploadPreset: 'products_unsigned',
-        cropping: true,                  // обрізка увімкнена, але працює тільки для локальних файлів
-        croppingAspectRatio: 1,
-        croppingCoordinatesMode: 'custom',
+        cropping: true,                  // включає інтерфейс обрізки
+        croppingAspectRatio: 1,          // квадрат
+        croppingCoordinatesMode: 'custom', 
         multiple: false,
-        folder: 'products',
-        sources: ['local', 'url'],       // доступні обидва варіанти
-        showAdvancedOptions: false,
-        showCompletedButton: true
+        folder: 'products'
     }, (error, result) => {
         if (!error && result && result.event === "success") {
             const url = result.info.secure_url;
@@ -600,6 +607,7 @@ function openUploadWidget() {
             document.getElementById('f_image_url').value = url;
         } else if (error) {
             console.error("Upload Widget Error:", error);
+            alert("Помилка завантаження зображення.");
         }
     });
 
