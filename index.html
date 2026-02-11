@@ -288,7 +288,8 @@ renderProducts(allProducts);
         return `
         <div class="bg-white rounded-[2.5rem] border border-slate-100 flex flex-col p-2 shadow-sm relative h-full">
             ${isAdmin ? `
-            <div class="absolute top-4 right-4 z-10 flex flex-col gap-1">
+<div class="absolute top-4 right-4 z-10 flex flex-col items-center gap-2">
+
     <button onclick="editById('${p.id}')" class="bg-white/90 backdrop-blur w-9 h-9 rounded-full shadow-md border flex items-center justify-center text-blue-600">
         <i class="fas fa-edit text-xs"></i>
     </button>
@@ -296,12 +297,23 @@ renderProducts(allProducts);
         <i class="fas fa-trash-alt text-xs"></i>
     </button>
 
-    ${p.is_special_rate >= 1 ? `
-    <span class="text-[8px] font-bold text-emerald-600 mt-1 text-center">
-        Спецкурс №${p.is_special_rate}
-    </span>
-    ` : ''}
+    ${p.is_special_rate >= 1 ? (() => {
+        const colors = {
+            1: 'bg-emerald-400',
+            2: 'bg-blue-500',
+            3: 'bg-orange-500',
+            4: 'bg-purple-500'
+        };
+        const colorClass = colors[p.is_special_rate] || 'bg-gray-500';
+        return `
+        <div class="w-9 h-9 mt-1 flex items-center justify-center ${colorClass} text-white rounded-full text-[10px] font-black shadow-md">
+            СК${p.is_special_rate}
+        </div>
+        `;
+    })() : ''}
+
 </div>` : ''}
+
             <div class="aspect-square p-6 flex items-center justify-center bg-slate-50/50 rounded-[2rem] mb-4">
                 <img src="${p.image_url}" class="max-w-full max-h-full object-contain" loading="lazy">
             </div>
@@ -320,8 +332,11 @@ renderProducts(allProducts);
                     ` : ''}
                 </div>
                 <div class="mt-auto">
-                    <div class="text-xl font-black text-slate-900 mb-3">${formatPrice(p, p.price_base)}</div>
-                    <div class="space-y-1">${optHtml}</div>
+                    ${isAdmin ? `
+    <div class="text-xl font-black text-slate-900 mb-3">${formatPrice(p, p.price_base)}</div>
+    <div class="space-y-1">${optHtml}</div>
+` : ''}
+
                     <a href="https://t.me/VikusyaGuzeeva" target="_blank" class="block w-full mt-4 py-3.5 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest text-center shadow-lg active:scale-95 transition-transform">Замовити</a>
                 </div>
             </div>
