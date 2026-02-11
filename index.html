@@ -61,9 +61,9 @@
     <div class="container mx-auto flex justify-between items-center">
         <img src="https://res.cloudinary.com/dtmvidhde/image/upload/v1770034516/Gmed_cosmetics_z7hp7a.jpg" class="h-10 rounded-lg shadow-sm">
         <div class="flex items-center gap-2">
-            <button onclick="generatePDF()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-blue-50 text-blue-600 shadow-sm" title="PDF Прайс">
-                <i class="fas fa-file-pdf text-sm"></i>
-            </button>
+            <button id="pdfBtn" onclick="generatePDF()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-blue-50 text-blue-600 shadow-sm hidden" title="PDF Прайс">
+    <i class="fas fa-file-pdf text-sm"></i>
+</button>
             <div class="relative">
                 <button onclick="document.getElementById('catDropdown').classList.toggle('show')" class="px-5 py-2.5 bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-100">Категорії</button>
                 <div id="catDropdown" class="dropdown-content mt-2"></div>
