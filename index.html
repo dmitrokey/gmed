@@ -673,6 +673,45 @@ const data = await response.json();
 }
 
 
+// === ВСТАВКА ЗОБРАЖЕННЯ ЧЕРЕЗ CTRL+V ===
+document.addEventListener('paste', async function (event) {
+    const items = event.clipboardData.items;
+
+    for (let item of items) {
+        if (item.type.indexOf("image") !== -1) {
+            const blob = item.getAsFile();
+
+            const formData = new FormData();
+            formData.append("file", blob);
+            formData.append("upload_preset", "products_unsigned"); // твій preset
+
+            try {
+                const response = await fetch(
+                    "https://api.cloudinary.com/v1_1/dtmvidhde/image/upload",
+                    {
+                        method: "POST",
+                        body: formData
+                    }
+                );
+
+                const data = await response.json();
+
+                if (data.secure_url) {
+                    // Встановлюємо зображення в попередній перегляд модалки
+                    const preview = document.getElementById('modalPreview');
+                    const input = document.getElementById('f_image_url');
+                    preview.src = data.secure_url;
+                    input.value = data.secure_url;
+                }
+            } catch (err) {
+                console.error("Помилка завантаження зображення:", err);
+            }
+        }
+    }
+});
+
+
+
 </script>
 
 
