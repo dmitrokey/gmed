@@ -288,10 +288,20 @@ renderProducts(allProducts);
         return `
         <div class="bg-white rounded-[2.5rem] border border-slate-100 flex flex-col p-2 shadow-sm relative h-full">
             ${isAdmin ? `
-            <div class="absolute top-4 right-4 z-10 flex flex-col gap-2">
-                <button onclick="editById('${p.id}')" class="bg-white/90 backdrop-blur w-9 h-9 rounded-full shadow-md border flex items-center justify-center text-blue-600"><i class="fas fa-edit text-xs"></i></button>
-                <button onclick="deleteP('${p.id}')" class="bg-red-500 w-9 h-9 rounded-full shadow-md flex items-center justify-center text-white"><i class="fas fa-trash-alt text-xs"></i></button>
-            </div>` : ''}
+            <div class="absolute top-4 right-4 z-10 flex flex-col gap-1">
+    <button onclick="editById('${p.id}')" class="bg-white/90 backdrop-blur w-9 h-9 rounded-full shadow-md border flex items-center justify-center text-blue-600">
+        <i class="fas fa-edit text-xs"></i>
+    </button>
+    <button onclick="deleteP('${p.id}')" class="bg-red-500 w-9 h-9 rounded-full shadow-md flex items-center justify-center text-white">
+        <i class="fas fa-trash-alt text-xs"></i>
+    </button>
+
+    ${p.is_special_rate >= 1 ? `
+    <span class="text-[8px] font-bold text-emerald-600 mt-1 text-center">
+        Спецкурс №${p.is_special_rate}
+    </span>
+    ` : ''}
+</div>` : ''}
             <div class="aspect-square p-6 flex items-center justify-center bg-slate-50/50 rounded-[2rem] mb-4">
                 <img src="${p.image_url}" class="max-w-full max-h-full object-contain" loading="lazy">
             </div>
