@@ -68,9 +68,10 @@
                 <button onclick="document.getElementById('catDropdown').classList.toggle('show')" class="px-5 py-2.5 bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-100">Категорії</button>
                 <div id="catDropdown" class="dropdown-content mt-2"></div>
             </div>
-            <button onclick="handleAuth()" id="adminBtn" class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-900 text-white shadow-lg">
-                <i class="fas fa-lock text-xs"></i>
-            </button>
+            <button id="adminBtn" class="w-10 h-10 flex items-center justify-center rounded-xl bg-green-50 text-green-600 shadow-sm" title="Вхід в адмінрежим">
+    <i class="fas fa-user-shield text-sm"></i> Вхід
+</button>
+
         </div>
     </div>
 </header>
@@ -194,6 +195,38 @@
     const SUPABASE_URL = 'https://djrrojucwvafgvetdrnf.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqcnJvanVjd3ZhZmd2ZXRkcm5mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2OTgwNjcsImV4cCI6MjA4NTI3NDA2N30.QLq_rJF6XwskKbOO3zjhSrF8DK3YnRscIIjJl0Kr2e4';
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    
+// --- Кнопка PDF та адмін ---
+const pdfBtn = document.getElementById('pdfBtn');
+const adminBtn = document.getElementById('adminBtn');
+
+adminBtn.addEventListener('click', handleAuth); // логіка входу/виходу
+
+async function updateUIForSession() {
+    const { data: { session } } = await client.auth.getSession();
+
+    if (session) {
+        // Користувач увійшов → показуємо адмінпанель і PDF
+        document.getElementById('adminPanel').classList.remove('hidden');
+
+        // Змінюємо кнопку адміна на "Вихід"
+        adminBtn.innerHTML = '<i class="fas fa-sign-out-alt text-xs"></i> Вихід';
+
+        // Показуємо PDF
+        if (pdfBtn) pdfBtn.classList.remove('hidden');
+    } else {
+        // Гість → приховуємо PDF і адмінпанель
+        document.getElementById('adminPanel').classList.add('hidden');
+        if (pdfBtn) pdfBtn.classList.add('hidden');
+
+        // Кнопка адміна → "Вхід"
+        adminBtn.innerHTML = '<i class="fas fa-user-shield text-sm"></i> Вхід';
+    }
+}
+
+// Викликаємо одразу після завантаження сторінки
+updateUIForSession();
+
     
     let allProducts = [];
 let rates = { euro: 44.5, usd: 41.5, spec1: 45.0, spec2: 46.0 };
