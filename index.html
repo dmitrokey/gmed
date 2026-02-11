@@ -613,6 +613,47 @@ function openUploadWidget() {
 
     widget.open();
 }
+
+// === ВСТАВКА ЗОБРАЖЕННЯ ЧЕРЕЗ CTRL+V ===
+document.addEventListener('paste', async function (event) {
+    const items = event.clipboardData.items;
+
+    for (let item of items) {
+        if (item.type.indexOf("image") !== -1) {
+            const blob = item.getAsFile();
+
+            const formData = new FormData();
+            formData.append("file", blob);
+            formData.append("upload_preset", "products_unsigned"); // твій preset
+
+            try {
+                const response = await fetch(
+                    "https://api.cloudinary.com/v1_1/dtmvidhde/image/upload",
+                    {
+                        method: "POST",
+                        body: formData
+                    }
+                );
+
+                const data = await response.json();
+
+                // Вставляємо URL у форму
+                document.getElementById("f_image_url").value = data.secure_url;
+                document.getElementById("modalPreview").src = data.secure_url;
+
+                alert("Фото вставлено та завантажено!");
+
+            } catch (error) {
+                console.error("Upload error:", error);
+                alert("Помилка завантаження фото");
+            }
+
+            break;
+        }
+    }
+});
+
+    
 </script>
 
 
