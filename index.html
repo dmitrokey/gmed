@@ -830,58 +830,7 @@ document.getElementById("pasteBtn").addEventListener("click", async () => {
     }
 });
 
-
-async function checkClipboardForImage() {
-    const pasteBtn = document.getElementById("pasteBtn");
-
-    if (!navigator.clipboard || !navigator.clipboard.read) {
-        return; // браузер не підтримує
-    }
-
-    try {
-        const items = await navigator.clipboard.read();
-
-        let hasImage = false;
-
-        for (const item of items) {
-            for (const type of item.types) {
-                if (type.startsWith("image/")) {
-                    hasImage = true;
-                    break;
-                }
-            }
-        }
-
-        if (hasImage) {
-            // Підсвічування
-            pasteBtn.classList.remove("bg-indigo-600");
-            pasteBtn.classList.add("bg-green-600", "animate-pulse");
-        } else {
-            // Звичайний стан
-            pasteBtn.classList.remove("bg-green-600", "animate-pulse");
-            pasteBtn.classList.add("bg-indigo-600");
-        }
-
-    } catch (err) {
-        // доступ до буфера може вимагати взаємодії користувача
-        console.log("Clipboard check blocked");
-    }
-}
-
-// Коли відкривається модалка
-document.addEventListener("visibilitychange", () => {
-    if (!document.hidden) {
-        checkClipboardForImage();
-    }
-});
-
-// Коли користувач повертається у вкладку
-window.addEventListener("focus", () => {
-    checkClipboardForImage();
-});
-
 </script>
-
 
 </body>
 </html>
