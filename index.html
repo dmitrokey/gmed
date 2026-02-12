@@ -132,16 +132,8 @@
 
                 <input type="text" id="f_dosage" placeholder="Одиниці товару (шт., уп. шпр.)" class="bg-slate-50 rounded-lg p-2 text-xs font-bold outline-none border border-slate-100">
             </div>
-           <button type="button" onclick="openUploadWidget()" class="bg-blue-600 text-white px-3 py-2 rounded-lg text-[10px] font-black">
-        Завантажити фото
-    </button>
+            <button type="button" onclick="openUploadWidget()" class="bg-blue-600 text-white px-3 py-2 rounded-lg text-[10px]">Завантажити фото</button>
 
-<button 
-    type="button" 
-    id="pasteBtn" 
-    class="bg-indigo-600 text-white px-3 py-2 rounded-lg text-[10px] font-black transition-all duration-200">
-    Вставити фото
-</button>
             <input type="text" id="f_image_url" oninput="document.getElementById('modalPreview').src=this.value" placeholder="URL зображення" class="w-full bg-slate-50 rounded-lg p-2 text-[10px] outline-none border border-slate-100">
 
             <div class="bg-emerald-50/50 p-3 rounded-xl border border-emerald-100 flex items-center gap-3">
@@ -592,7 +584,6 @@ const formatPrice = (p, price, qty=null, unit=null) => {
 };
 
 
-
                // Використовуємо форматування з сайту
 let prices = formatPrice(p, p.price_base); // базова ціна
 if (p.condition_2_val)
@@ -662,7 +653,6 @@ window.filterByCategory = function(category) {
 
     init();
 </script>
-
     
 <!-- Cloudinary Widget -->
 <script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
@@ -718,7 +708,6 @@ if (!response.ok) {
 
 const data = await response.json();
 
-
         if (Array.isArray(data) && data.length > 0) {
 
             const dateStr = new Date(data[0].commit.committer.date);
@@ -742,7 +731,6 @@ const data = await response.json();
         console.error("GitHub API error:", error);
     }
 }
-
 
 // === ВСТАВКА ЗОБРАЖЕННЯ ЧЕРЕЗ CTRL+V ===
 document.addEventListener('paste', async function (event) {
@@ -787,33 +775,7 @@ function orderProduct(productName) {
     window.open(telegramUrl, '_blank');
 }
 
-function uploadPastedImage(blob) {
-    const formData = new FormData();
-    formData.append("file", blob);
-    formData.append("upload_preset", "products_unsigned");
-
-    fetch("https://api.cloudinary.com/v1_1/dtmvidhde/image/upload", {
-        method: "POST",
-        body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.secure_url) {
-            document.getElementById('modalPreview').src = data.secure_url;
-            document.getElementById('f_image_url').value = data.secure_url;
-        }
-    })
-    .catch(err => {
-        console.error("Помилка Cloudinary:", err);
-        alert("Не вдалося завантажити фото");
-    });
-}
-
-document.getElementById("pasteBtn").addEventListener("click", () => {
-    alert("Натисніть Ctrl+V для вставки фото з буфера");
-});
-
-
 </script>
+
 </body>
 </html>
