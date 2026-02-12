@@ -809,28 +809,11 @@ function uploadPastedImage(blob) {
     });
 }
 
-document.getElementById("pasteBtn").addEventListener("click", async () => {
-    try {
-        // Читаємо буфер обміну
-        const items = await navigator.clipboard.read();
-
-        for (const item of items) {
-            for (const type of item.types) {
-                if (type.startsWith("image/")) {
-                    const blob = await item.getType(type);
-                    uploadPastedImage(blob);
-                    return;
-                }
-            }
-        }
-        alert("У буфері немає зображення 😕");
-    } catch (err) {
-        console.error("Не вдалося прочитати буфер обміну:", err);
-        alert("Браузер не дозволив доступ до буфера обміну");
-    }
+document.getElementById("pasteBtn").addEventListener("click", () => {
+    alert("Натисніть Ctrl+V для вставки фото з буфера");
 });
 
-</script>
 
+</script>
 </body>
 </html>
